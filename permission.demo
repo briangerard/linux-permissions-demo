@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+
+#startSlide
+#while (true)
+#do
+#    echo "yay i am on $currentSlide and next up is $nextSlide"
+#    nextSlide
+#done
+
+shopt -s nocasematch
+
+workingDir=$(dirname ${BASH_SOURCE[0]})
+if [[ -f ${workingDir}/.bash_colors ]]
+then
+    . ${workingDir}/.bash_colors
+fi
+
+currentSlide=1
+if [[ $# -eq 1 ]]
+then
+    nextSlide=$(( $1 + 1 ))
+else
+    nextSlide=2
+fi
+
+function setupDemo() {
+    mkdir -p $testDir 2> /dev/null
+    if [[ -d $testDir ]]
+    then
+        touch $testFile
+        if [[ ! -f $testFile ]]
+        then
+            echo "ERROR: Unable to create $testFile"
+            exit 1
+        fi
+    else
+        echo "ERROR: Unable to mkdir $testDir"
+        exit 1
+    fi
+}
+
+function cleanupDemo() {
+    if [[ -d $testDir ]]
+    then
+        /bin/rm -rf $testDir
+    fi
+}
+
+function insertLines() {
+    echo ""; echo ""; echo ""; echo ""
+}
+
+# The message says to start again at $currentSlide - 1 because it is almost
+# certain to refer to the correct slide.  There's a very narrow window of time
+# when it is not what is wanted; one would have to be incredibly lucky (or
+# unlucky) to get a ctrl-c into that interval, and even then, you'd just be
+# one slide behind what you wanted.
+function gracefulDeath() {
+    clear
+    insertLines
+    echo -ne "${BIWhite}To jump back to this point again, "
+    echo -e "run \"${BIGreen}$0" $(( currentSlide - 1 ))"${BIWhite}\"${Color_Off}"
+    insertLines
+    exit 0
+}
+
+# Die gracefully in case of <ctrl>-c
+trap gracefulDeath SIGINT
+
+function startSlide() {
+    clear
+    insertLines
+}
+
+function nextSlide() {
+    insertLines
+    currentSlide=$(( currentSlide + 1 ))
+    if [[ $currentSlide -ge $nextSlide ]]
+    then
+        echo -e "${BIWhite}[ Slide" $(( currentSlide - 1)) "]${Color_Off}"
+        read quit
+        if [[ $quit =~ ^q ]]
+        then
+            gracefulDeath
+        fi
+        nextSlide=$(( nextSlide + 1 ))
+    fi
+    startSlide
+}
+
+
+function chmodAndShow() {
+    if [[ $# -eq 2 ]]
+    then
+        perms=$1
+        file=$2
+        
+        echo chmod $perms $file
+        chmod $perms $file
+        /bin/ls -ld $file | /bin/egrep --color=auto '[^ ]{9} '
+
+    else
+        echo -ne "${On_IRed}${BIWhite}ERROR: Invalid chmodAndShow() usage: "
+        echo -e  "$0 line ${BASH_LINENO[0]}${Color_Off}"
+    fi
+
+}
+
+testDir="${workingDir}/my_test_dir"
+testFile="${testDir}/a_file"
+setupDemo
+
+startSlide
+
+###
+
+chmodAndShow "foo"
+
+nextSlide
+
+###
+
+chmodAndShow 1777 $testDir
+
+nextSlide
+
+###
+
+echo -e "${BIWhite}End of Slides${Color_Off}"
+insertLines
+
+cleanupDemo
