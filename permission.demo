@@ -125,6 +125,9 @@ echoWhite "   #    #  #####   #    #  # ## #   ####"
 echoWhite "   #####   #       #####   #    #       #"
 echoWhite "   #       #       #   #   #    #  #    #"
 echoWhite "   #       ######  #    #  #    #   ####"
+echo ""
+echo ""
+echo -e "${BIGreen}https://github.com/briangerard/linux-permissions-demo${Color_Off}"
 nextSlide
 
 ###
@@ -138,7 +141,13 @@ echo -e "       ${BICyan}Group${Color_Off}"
 nextSlide
 
 ###
-echoWhite "Each actor gets a triplet of bits..."
+echoWhite "Each actor gets a triplet of bits, which can be treated as a binary number."
+echo ""
+echoWhite "   r--  ==  2^2  ==  4"
+echoWhite "   -w-  ==  2^1  ==  2"
+echoWhite "   --x  ==  2^0  ==  1"
+echo ""
+echo "         ...so..."
 echo ""
 echoWhite "   ---  ==  000  ==  0  "
 echoWhite "   --x  ==  001  ==  1  "
@@ -162,6 +171,7 @@ nextSlide
 
 ###
 echoWhite "Here's what all the possible values look like on the file system:"
+echoWhite "             (Only doing the user's permissions.)"
 echo ""
 for mode in "000" "100" "200" "300" "400" "500" "600" "700"
 do
@@ -191,6 +201,22 @@ nextSlide
 
 ###
 echoWhite "What about setuid, setgid, sticky bits?"
+echo ""
+echoWhite "           +---------------------------+----------------------------------+"
+echoWhite "           |       On Directories      |             On Files             |"
+echoWhite "  +--------+---------------------------+----------------------------------+"
+echo -e   "  ${BIWhite}| ${BIGreen}Setuid ${BIWhite}| *Sometimes* subfiles and  | If file is a non-script          |${Color_Off}"
+echoWhite "  |        | subdirs inherit ownership | executable, it runs as the owner |"
+echoWhite "  +--------+---------------------------+----------------------------------+"
+echo -e   "  ${BIWhite}| ${BIGreen}Setgid ${BIWhite}|   Subfiles and subdirs    | If file is a non-script          |${Color_Off}"
+echoWhite "  |        |    inherit ownership      | executable, it runs with the     |"
+echoWhite "  |        |                           | file's group ownership           |"
+echoWhite "  +--------+---------------------------+----------------------------------+"
+echo -e   "  ${BIWhite}| ${BIGreen}Sticky ${BIWhite}|   Subfiles and subdirs    | No effect.                       |${Color_Off}"
+echoWhite "  |        |   may not be removed or   |                                  |"
+echoWhite "  |        |   renamed except by the   |                                  |"
+echoWhite "  |        |  owner or the superuser   |                                  |"
+echoWhite "  +--------+---------------------------+----------------------------------+"
 nextSlide
 
 ###
@@ -226,14 +252,34 @@ echoWhite "Setuid on an executable, perhaps:"
 chmodAndShow 4755 $testFile
 echo ""
 echoWhite "Setgid bit on a directory:"
-chmodAndShow 2777 $testDir
+chmodAndShow 2775 $testDir
 echo ""
-echoWhite "A bit safer - Setgid and Sticky bits on a directory:"
+echoWhite "Or maybe both Setgid and Sticky bits on a directory:"
 chmodAndShow 3777 $testDir
 nextSlide
 
 ###
-echoWhite "End of Slides"
+echoWhite "  #####  #    #    ##    #    #  #    #"
+echoWhite "    #    #    #   #  #   ##   #  #   #"
+echoWhite "    #    ######  #    #  # #  #  ####"
+echoWhite "    #    #    #  ######  #  # #  #  #"
+echoWhite "    #    #    #  #    #  #   ##  #   #"
+echoWhite "    #    #    #  #    #  #    #  #    #"
+echo ""
+echo ""
+echoWhite "         #   #   ####   #    #   #"
+echoWhite "          # #   #    #  #    #   #"
+echoWhite "           #    #    #  #    #   #"
+echoWhite "           #    #    #  #    #   #"
+echoWhite "           #    #    #  #    #"
+echoWhite "           #     ####    ####    #"
+echo ""
+echo ""
+echo -e "${BIGreen}https://github.com/briangerard/linux-permissions-demo${Color_Off}"
+nextSlide
+
+###
+echoWhite "          Thus Endeth the Slides"
 insertLines
 
 cleanupDemo
