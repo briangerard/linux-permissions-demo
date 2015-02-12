@@ -131,9 +131,11 @@ echo -e "${BIGreen}https://github.com/briangerard/linux-permissions-demo${Color_
 nextSlide
 
 ###
-echoWhite "Permissions correspond to different actors:"
+echoWhite "Permissions are the basic file (directory, etc) access control mechanism."
 echo ""
-echo -e "    ${BIGreen}User  ${BIYellow}Everyone else${Color_Off}"
+echoWhite "The permissions for a filesystem entry correspond to different actors:"
+echo ""
+echo -e "    ${BIGreen}User  ${BIYellow}Everyone else (\"Others\")${Color_Off}"
 echo -e "    ${BIGreen}/ \\   ${BIYellow}/ \\${Color_Off}"
 echo -e "   -${BIGreen}rw-${BICyan}r--${BIYellow}r--${Color_Off}"
 echo -e "       ${BICyan}\\ /${Color_Off}"
@@ -141,7 +143,9 @@ echo -e "       ${BICyan}Group${Color_Off}"
 nextSlide
 
 ###
-echoWhite "Each actor gets a triplet of bits, which can be treated as a binary number."
+echoWhite "Each actor gets a triplet of bits, which can be treated as a binary number[*]."
+echo ""
+echoWhite "[*] ...because, you know, it kind of is."
 echo ""
 echoWhite "   r--  ==  2^2  ==  4"
 echoWhite "   -w-  ==  2^1  ==  2"
@@ -180,9 +184,18 @@ done
 nextSlide
 
 ###
+echoWhite "You can also set those symbolically:"
+echo ""
+for mode in "a=" "u=x,go=" "u=w,go=" "u=wx,go=" "u=r,go=" "u=rx,go=" "u=rw,go=" "u=rwx,go="
+do
+    chmodAndShow $mode $testFile
+done
+nextSlide
+
+###
 echoWhite "Some of the more common directory permissions..."
 echo ""
-for mode in 700 755 777
+for mode in 700 755 777 "u=rwx,go=" "u=rwx,go=rx" "a=rwx"
 do
     chmodAndShow $mode $testDir
     echo ""
@@ -193,6 +206,16 @@ nextSlide
 echoWhite "And for files..."
 echo ""
 for mode in 600 644 666 700 755
+do
+    chmodAndShow $mode $testFile
+    echo ""
+done
+nextSlide
+
+###
+echoWhite "Files again, symbolically..."
+echo ""
+for mode in "u=rw,go=" "u=rw,go=r" "a=rw" "u=rwx,go=" "u=rwx,go=rx"
 do
     chmodAndShow $mode $testFile
     echo ""
@@ -213,9 +236,9 @@ echoWhite "  |        |    inherit ownership      | executable, it runs with the
 echoWhite "  |        |                           | file's group ownership           |"
 echoWhite "  +--------+---------------------------+----------------------------------+"
 echo -e   "  ${BIWhite}| ${BIGreen}Sticky ${BIWhite}|   Subfiles and subdirs    | No effect.                       |${Color_Off}"
-echoWhite "  |        |   may not be removed or   |                                  |"
-echoWhite "  |        |   renamed except by the   |                                  |"
-echoWhite "  |        |  owner or the superuser   |                                  |"
+echoWhite "  |        |   may not be removed or   | (On Linux, that is.  See...      |"
+echoWhite "  |        |   renamed except by the   | en.wikipedia.org/wiki/Sticky_bit |"
+echoWhite "  |        |  owner or the superuser   | for other operating systems.)    |"
 echoWhite "  +--------+---------------------------+----------------------------------+"
 nextSlide
 
@@ -244,11 +267,12 @@ nextSlide
 
 ###
 echoWhite "You set those by prepending to the regular mode."
+chmod a-rwxts $testDir
 echo ""
 echoWhite "Sticky bit on a directory:"
 chmodAndShow 1777 $testDir
 echo ""
-echoWhite "Setuid on an executable, perhaps:"
+echoWhite "Setuid on an executable:"
 chmodAndShow 4755 $testFile
 echo ""
 echoWhite "Setgid bit on a directory:"
@@ -256,6 +280,23 @@ chmodAndShow 2775 $testDir
 echo ""
 echoWhite "Or maybe both Setgid and Sticky bits on a directory:"
 chmodAndShow 3777 $testDir
+nextSlide
+
+###
+echoWhite "And of course, you can set those same permissions symbolically."
+chmod a-rwxts $testDir
+echo ""
+echoWhite "Sticky bit on a directory:"
+chmodAndShow a=rwxt $testDir
+echo ""
+echoWhite "Setuid on an executable:"
+chmodAndShow u=rwxs,go=rx $testFile
+echo ""
+echoWhite "Setgid bit on a directory:"
+chmodAndShow u=rwx,g=rwxs,o=rx $testDir
+echo ""
+echoWhite "Or maybe both Setgid and Sticky bits on a directory:"
+chmodAndShow a=rwxt,g+s $testDir
 nextSlide
 
 ###
@@ -279,7 +320,11 @@ echo -e "${BIGreen}https://github.com/briangerard/linux-permissions-demo${Color_
 nextSlide
 
 ###
-echoWhite "          Thus Endeth the Slides"
 insertLines
+echoWhite "             Thus Endeth the Slides"
+insertLines
+insertLines
+read q
+clear
 
 cleanupDemo
