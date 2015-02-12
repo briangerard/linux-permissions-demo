@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-#startSlide
-#while (true)
-#do
-#    echo "yay i am on $currentSlide and next up is $nextSlide"
-#    nextSlide
-#done
-
 shopt -s nocasematch
 
 workingDir=$(dirname ${BASH_SOURCE[0]})
@@ -22,6 +15,10 @@ then
 else
     nextSlide=2
 fi
+
+function echoWhite() {
+    echo -e "${BIWhite}$@${Color_Off}"
+}
 
 function setupDemo() {
     mkdir -p $testDir 2> /dev/null
@@ -77,7 +74,7 @@ function nextSlide() {
     currentSlide=$(( currentSlide + 1 ))
     if [[ $currentSlide -ge $nextSlide ]]
     then
-        echo -e "${BIWhite}[ Slide" $(( currentSlide - 1)) "]${Color_Off}"
+        echoWhite "[ Slide" $(( currentSlide - 1)) "]"
         read quit
         if [[ $quit =~ ^q ]]
         then
@@ -95,7 +92,7 @@ function chmodAndShow() {
         perms=$1
         file=$2
         
-        echo chmod $perms $file
+        echo -e "chmod ${BIWhite}$perms ${BIGreen}$file${Color_Off}"
         chmod $perms $file
         /bin/ls -ld $file | /bin/egrep --color=auto '[^ ]{9} '
 
@@ -108,25 +105,135 @@ function chmodAndShow() {
 
 testDir="${workingDir}/my_test_dir"
 testFile="${testDir}/a_file"
-setupDemo
 
+# Now to kick things off...
+setupDemo
 startSlide
 
 ###
-
-chmodAndShow "foo"
-
+echoWhite "   #          #    #    #  #    #  #    #"
+echoWhite "   #          #    ##   #  #    #   #  #"
+echoWhite "   #          #    # #  #  #    #    ##"
+echoWhite "   #          #    #  # #  #    #    ##"
+echoWhite "   #          #    #   ##  #    #   #  #"
+echoWhite "   ######     #    #    #   ####   #    #"
+echo ""
+echo ""
+echoWhite "   #####   ######  #####   #    #   ####"
+echoWhite "   #    #  #       #    #  ##  ##  #"
+echoWhite "   #    #  #####   #    #  # ## #   ####"
+echoWhite "   #####   #       #####   #    #       #"
+echoWhite "   #       #       #   #   #    #  #    #"
+echoWhite "   #       ######  #    #  #    #   ####"
 nextSlide
 
 ###
+echoWhite "Permissions correspond to different actors:"
+echo ""
+echo -e "    ${BIGreen}User  ${BIYellow}Everyone else${Color_Off}"
+echo -e "    ${BIGreen}/ \\   ${BIYellow}/ \\${Color_Off}"
+echo -e "   -${BIGreen}rw-${BICyan}r--${BIYellow}r--${Color_Off}"
+echo -e "       ${BICyan}\\ /${Color_Off}"
+echo -e "       ${BICyan}Group${Color_Off}"
+nextSlide
 
+###
+echoWhite "Each actor gets a triplet of bits..."
+echo ""
+echoWhite "   ---  ==  000  ==  0  "
+echoWhite "   --x  ==  001  ==  1  "
+echoWhite "   -w-  ==  010  ==  2  "
+echoWhite "   -wx  ==  011  ==  3  "
+echoWhite "   r--  ==  100  ==  4  "
+echoWhite "   r-x  ==  101  ==  5  "
+echoWhite "   rw-  ==  110  ==  6  "
+echoWhite "   rwx  ==  111  ==  7  "
+nextSlide
+
+###
+echoWhite "So putting those together..."
+echo ""
+echo -e "${BIGreen}         User: rw- == 110 == 6${Color_Off}"
+echo -e "${BICyan}        Group: r-- == 100 == 4${Color_Off}"
+echo -e "${BIYellow}Everyone else: r-- == 100 == 4${Color_Off}"
+echo ""
+echoWhite "        Makes:  rw-r--r-- == 644"
+nextSlide
+
+###
+echoWhite "Here's what all the possible values look like on the file system:"
+echo ""
+for mode in "000" "100" "200" "300" "400" "500" "600" "700"
+do
+    chmodAndShow $mode $testFile
+done
+nextSlide
+
+###
+echoWhite "Some of the more common directory permissions..."
+echo ""
+for mode in 700 755 777
+do
+    chmodAndShow $mode $testDir
+    echo ""
+done
+nextSlide
+
+###
+echoWhite "And for files..."
+echo ""
+for mode in 600 644 666 700 755
+do
+    chmodAndShow $mode $testFile
+    echo ""
+done
+nextSlide
+
+###
+echoWhite "What about setuid, setgid, sticky bits?"
+nextSlide
+
+###
+echoWhite "Think of each actor triplet as a bit:"
+echo ""
+echo -e "    ${BIGreen}Setuid  ${BIYellow}Sticky${Color_Off}"
+echo -e "    ${BIGreen}/ \\   ${BIYellow}/ \\${Color_Off}"
+echo -e "   -${BIGreen}---${BICyan}---${BIYellow}---${Color_Off}"
+echo -e "       ${BICyan}\\ /${Color_Off}"
+echo -e "       ${BICyan}Setgid${Color_Off}"
+nextSlide
+
+###
+echoWhite "Keeping that association in mind gives us these:"
+echo ""
+echoWhite "   000  ==  0  == No special bits"
+echoWhite "   001  ==  1  == Sticky bit"
+echoWhite "   010  ==  2  == Setgid bit"
+echoWhite "   011  ==  3  == Setgit + Sticky bits"
+echoWhite "   100  ==  4  == Setuid bit"
+echoWhite "   101  ==  5  == Setuid + Sticky bits"
+echoWhite "   110  ==  6  == Setuid + Setgid bits"
+echoWhite "   111  ==  7  == Setuid + Setgid + Sticky bits"
+nextSlide
+
+###
+echoWhite "You set those by prepending to the regular mode."
+echo ""
+echoWhite "Sticky bit on a directory:"
 chmodAndShow 1777 $testDir
-
+echo ""
+echoWhite "Setuid on an executable, perhaps:"
+chmodAndShow 4755 $testFile
+echo ""
+echoWhite "Setgid bit on a directory:"
+chmodAndShow 2777 $testDir
+echo ""
+echoWhite "A bit safer - Setgid and Sticky bits on a directory:"
+chmodAndShow 3777 $testDir
 nextSlide
 
 ###
-
-echo -e "${BIWhite}End of Slides${Color_Off}"
+echoWhite "End of Slides"
 insertLines
 
 cleanupDemo
